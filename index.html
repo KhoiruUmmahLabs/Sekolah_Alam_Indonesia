@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sekali - Monitoring Tahfizh, Tahsin & Adab Harian</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-900 text-slate-800 select-none antialiased min-h-screen">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <!-- FRAME UTAMA MOBILE (Terkunci max-w-md di tengah layar desktop, responsif di HP) -->
+  <div class="max-w-md mx-auto min-h-screen relative bg-slate-50 shadow-2xl flex flex-col pb-20">
+
+    <!-- DEMO / SPREADSHEET STATUS BANNER -->
+    <div id="connection-banner" class="demo-banner flex items-center justify-between px-3 py-1 cursor-pointer" onclick="openModalPengaturan()">
+      <span id="banner-text">⚡ Mode Demo (Lokal) &bull; Klik untuk hubungkan ke Spreadsheet</span>
+      <span class="underline text-[10px]">Atur</span>
+    </div>
+
+    <!-- 1. STICKY HEADER -->
+    <header class="sticky top-0 left-0 right-0 h-14 glass-header text-white flex items-center justify-between px-4 shadow-md z-40">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="openModalUserSwitch()" title="Klik untuk Ganti Akun / Peran">
+        <div class="relative">
+          <img id="user-img" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" class="w-9 h-9 rounded-full border-2 border-white object-cover shadow-sm">
+          <span id="user-role-badge" class="absolute -bottom-1 -right-1 text-[8px] bg-amber-400 text-slate-900 font-extrabold px-1 rounded-full uppercase">Siswa</span>
+        </div>
+        <div>
+          <div class="flex items-center space-x-1">
+            <span id="user-name" class="font-bold text-xs leading-tight line-clamp-1">Memuat...</span>
+            <svg class="w-3 h-3 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+          <div id="user-level" class="text-[10px] text-emerald-100">Level 1</div>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-2 text-xs font-bold">
+        <div class="badge-counter px-2.5 py-1 rounded-full flex items-center space-x-1" title="Bintang (Dari Misi Kegiatan Harian)">
+          <span>⭐</span>
+          <span id="user-star">0</span>
+        </div>
+        <div class="badge-counter px-2.5 py-1 rounded-full flex items-center space-x-1" title="Diamond (Dari Juara 1 Pekanan & Misi Semesteran)">
+          <span>💎</span>
+          <span id="user-diamond">0</span>
+        </div>
+        <button onclick="openModalPengaturan()" class="p-1 rounded-full hover:bg-emerald-700/50 text-emerald-100" title="Pengaturan Database">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. CONTAINER KONTEN (5 HALAMAN) -->
+    <main class="flex-1 px-4 py-3">
+      
+      <!-- HALAMAN 1: BERANDA / DASHBOARD -->
+      <section id="page-dashboard" class="page-content space-y-3.5 fade-in">
+        
+        <!-- Welcome Greeting Card -->
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-4 text-white shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-emerald-100 font-medium">Assalamu'alaikum,</p>
+            <h2 id="dash-greeting-name" class="text-base font-bold">Sahabat Qur'an</h2>
+            <p class="text-[11px] text-emerald-100/90 mt-1" id="dash-motivation">"Sebaik-baik kalian adalah yang mempelajari Al-Qur'an dan mengajarkannya."</p>
+          </div>
+          <div class="text-3xl p-2 bg-white/10 rounded-2xl backdrop-blur-sm">📖</div>
+        </div>
+
+        <!-- Kartu Juara Pekan Ini & Reward Diamond -->
+        <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-3.5 text-white shadow-sm flex items-center justify-between">
+          <div class="space-y-0.5">
+            <div class="flex items-center space-x-1.5">
+              <span class="text-xs bg-amber-700/60 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[9px]">Pekan Berjalan</span>
+              <span class="text-[10px] text-amber-100 font-semibold">Bonus: <b>+30 💎</b></span>
+            </div>
+            <div class="text-xs font-bold pt-1">
+              👑 Peringkat 1 Saat Ini: <span id="dash-leader-pekanan" class="underline decoration-amber-200">Memuat...</span>
+            </div>
+            <p class="text-[10px] text-amber-100/90">Siswa dengan Bintang terbanyak di akhir pekan meraih reward Diamond!</p>
+          </div>
+          <div class="text-3xl pl-2">💎</div>
+        </div>
+
+        <!-- Ringkasan Statistik Saya -->
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <span class="text-[10px] text-slate-400 font-semibold block">Setoran Selesai</span>
+            <span id="stat-total-setoran" class="text-sm font-bold text-slate-700">0</span>
+          </div>
+          <div class="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <span class="text-[10px] text-slate-400 font-semibold block">Mutqin</span>
+            <span id="stat-mutqin" class="text-sm font-bold text-emerald-600">0</span>
+          </div>
+          <div class="bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm">
+            <span class="text-[10px] text-slate-400 font-semibold block">Kelancaran</span>
+            <span id="stat-persen-mutqin" class="text-sm font-bold text-blue-600">0%</span>
+          </div>
+        </div>
+
+        <!-- Section Papan Peringkat -->
+        <div class="flex items-center justify-between mt-1">
+          <div class="flex items-center space-x-1.5">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <h2 class="font-bold text-slate-700 text-xs">Papan Peringkat Juara (Top 3)</h2>
+          </div>
+          <button onclick="fetchDataFromSheet(true)" class="text-[10px] text-emerald-600 font-semibold hover:underline flex items-center space-x-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>Segarkan</span>
+          </button>
+        </div>
+
+        <!-- 3 Kotak Leaderboard -->
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-bold text-xs text-amber-600 flex items-center space-x-1">
+              <span>⭐</span>
+              <span>Top Skor Bintang Pekanan</span>
+            </span>
+            <span class="text-[10px] bg-amber-50 text-amber-700 font-bold px-1.5 py-0.5 rounded">Calon Juara Diamond</span>
+          </div>
+          <div id="list-top-bintang" class="text-xs space-y-1.5 text-slate-600">
+            <p class="animate-pulse text-slate-400 text-[11px]">Memuat peringkat...</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-bold text-xs text-emerald-600 flex items-center space-x-1">
+              <span>📜</span>
+              <span>Top Setoran Tahfizh</span>
+            </span>
+            <span class="text-[10px] text-slate-400 font-medium">Hafalan Mutqin</span>
+          </div>
+          <div id="list-top-tahfizh" class="text-xs space-y-1.5 text-slate-600">
+            <p class="animate-pulse text-slate-400 text-[11px]">Memuat peringkat...</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-bold text-xs text-blue-600 flex items-center space-x-1">
+              <span>📖</span>
+              <span>Top Setoran Tahsin</span>
+            </span>
+            <span class="text-[10px] text-slate-400 font-medium">Bacaan Lancar</span>
+          </div>
+          <div id="list-top-tahsin" class="text-xs space-y-1.5 text-slate-600">
+            <p class="animate-pulse text-slate-400 text-[11px]">Memuat peringkat...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- HALAMAN 2: MISI (40 HEADLINE + SUBMISI + MISI SEMESTERAN) -->
+      <section id="page-misi" class="page-content space-y-3 hidden fade-in">
+        
+        <!-- Toggle Tab: Misi Harian vs Misi Semesteran -->
+        <div class="flex bg-slate-200/80 p-1 rounded-xl text-xs font-bold">
+          <button id="tab-misi-harian-btn" onclick="switchMisiSubTab('harian')" class="flex-1 py-1.5 rounded-lg bg-white text-emerald-700 shadow-sm transition-all text-center">
+            ☀️ Misi Harian (⭐ Bintang)
+          </button>
+          <button id="tab-misi-semester-btn" onclick="switchMisiSubTab('semester')" class="flex-1 py-1.5 rounded-lg text-slate-600 hover:text-slate-800 transition-all text-center">
+            🎓 Misi Semester (💎 Diamond)
+          </button>
+        </div>
+
+        <!-- SUBTAB 1: MISI HARIAN (Bangun Tidur s.d. Tidur Kembali) -->
+        <div id="subtab-misi-harian" class="space-y-3">
+          
+          <!-- Progress Box Harian -->
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex justify-between items-center text-xs">
+            <div>
+              <div class="font-bold text-emerald-800">Kegiatan Hari Ini</div>
+              <div class="text-[11px] text-emerald-600" id="misi-harian-progress-text">0 dari 40 Headline Selesai</div>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-extrabold bg-emerald-600 text-white px-2.5 py-1 rounded-lg" id="misi-harian-star-earned">
+                +0 ⭐ Hari Ini
+              </span>
+            </div>
+          </div>
+
+          <!-- Filter Waktu Kegiatan -->
+          <div class="flex space-x-1.5 overflow-x-auto pb-1 text-xs">
+            <button onclick="filterHeadlineWaktu('all', this)" class="filter-waktu-btn px-3 py-1 bg-emerald-600 text-white rounded-lg font-bold text-[11px]">Semua (40)</button>
+            <button onclick="filterHeadlineWaktu('Pagi', this)" class="filter-waktu-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Pagi</button>
+            <button onclick="filterHeadlineWaktu('Siang', this)" class="filter-waktu-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Siang</button>
+            <button onclick="filterHeadlineWaktu('Sore', this)" class="filter-waktu-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Sore</button>
+            <button onclick="filterHeadlineWaktu('Malam', this)" class="filter-waktu-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Malam</button>
+          </div>
+
+          <!-- Container 40 Headline Misi -->
+          <div id="list-40-headline-misi" class="space-y-2">
+            <p class="text-xs animate-pulse text-slate-400 text-center py-4">Memuat 40 headline kegiatan...</p>
+          </div>
+        </div>
+
+        <!-- SUBTAB 2: MISI SEMESTERAN (+DIAMOND) -->
+        <div id="subtab-misi-semester" class="space-y-3 hidden">
+          <div class="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-xs text-blue-900">
+            <div class="font-bold flex items-center space-x-1">
+              <span>💎</span>
+              <span>Tantangan Semester Berhadiah Diamond</span>
+            </div>
+            <p class="text-[11px] text-blue-700 mt-0.5">Selesaikan misi semesteran di bawah ini untuk mendapatkan Diamond penukar hadiah!</p>
+          </div>
+
+          <div id="list-misi-semester" class="space-y-2.5">
+            <!-- Render via app.js -->
+          </div>
+        </div>
+
+      </section>
+
+      <!-- HALAMAN 3: TAHFIZH (Murni Jurnal Hafalan, Tanpa Reward Bintang) -->
+      <section id="page-tahfizh" class="page-content space-y-3 hidden fade-in">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-bold text-slate-700 text-sm">Jurnal Laporan Tahfizh</h2>
+            <p class="text-[10px] text-slate-400">Pencatatan hafalan & evaluasi tajwid</p>
+          </div>
+          <span id="badge-tahfizh-count" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">0 Laporan</span>
+        </div>
+
+        <!-- Filter Tab Hasil -->
+        <div class="flex space-x-1.5 overflow-x-auto pb-1 text-xs">
+          <button onclick="filterTahfizh('all', this)" class="filter-tfz-btn px-3 py-1 bg-emerald-600 text-white rounded-lg font-semibold text-[11px]">Semua</button>
+          <button onclick="filterTahfizh('Mutqin', this)" class="filter-tfz-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Mutqin</button>
+          <button onclick="filterTahfizh('Jayyid', this)" class="filter-tfz-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Jayyid</button>
+          <button onclick="filterTahfizh('Mardud', this)" class="filter-tfz-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Mardud</button>
+        </div>
+
+        <div id="list-tahfizh" class="space-y-2.5">
+          <p class="text-xs animate-pulse text-slate-400">Mengambil data jurnal...</p>
+        </div>
+      </section>
+
+      <!-- HALAMAN 4: TAHSIN (Murni Jurnal Bacaan, Tanpa Reward Bintang) -->
+      <section id="page-tahsin" class="page-content space-y-3 hidden fade-in">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-bold text-slate-700 text-sm">Jurnal Laporan Tahsin</h2>
+            <p class="text-[10px] text-slate-400">Pencatatan bacaan jilid & makhraj huruf</p>
+          </div>
+          <span id="badge-tahsin-count" class="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold">0 Laporan</span>
+        </div>
+
+        <!-- Filter Tab Hasil -->
+        <div class="flex space-x-1.5 overflow-x-auto pb-1 text-xs">
+          <button onclick="filterTahsin('all', this)" class="filter-ths-btn px-3 py-1 bg-blue-600 text-white rounded-lg font-semibold text-[11px]">Semua</button>
+          <button onclick="filterTahsin('Mutqin', this)" class="filter-ths-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Mutqin</button>
+          <button onclick="filterTahsin('Mengulang', this)" class="filter-ths-btn px-3 py-1 bg-white border border-slate-200 text-slate-600 rounded-lg font-semibold text-[11px]">Mengulang</button>
+        </div>
+
+        <div id="list-tahsin" class="space-y-2.5">
+          <p class="text-xs animate-pulse text-slate-400">Mengambil data jurnal...</p>
+        </div>
+      </section>
+
+      <!-- HALAMAN 5: TOKO HADIAH (10 Barang Spesifik) -->
+      <section id="page-toko" class="page-content space-y-3 hidden fade-in">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-bold text-slate-700 text-sm">Toko Penukaran Hadiah</h2>
+            <p class="text-[11px] text-slate-400">Tukar diamond dari Juara Pekanan & Misi Semester</p>
+          </div>
+          <div class="bg-amber-100 text-amber-800 font-bold text-xs px-2.5 py-1 rounded-xl flex items-center space-x-1">
+            <span>💎</span>
+            <span id="toko-user-diamond">0</span>
+          </div>
+        </div>
+
+        <div id="list-toko" class="grid grid-cols-2 gap-2.5">
+          <p class="text-xs animate-pulse text-slate-400 col-span-2 text-center py-4">Memuat katalog hadiah...</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 3 & 4. FIXED BOTTOM CONTROLS WRAPPER (Terkunci 100% di dalam frame mobile!) -->
+    <div class="fixed bottom-0 left-0 right-0 z-40 pointer-events-none">
+      <div class="max-w-md mx-auto relative pointer-events-auto">
+        
+        <!-- TOMBOL MELAYANG (+) DI DALAM FRAME -->
+        <button id="fab-add" onclick="openModalPilihan()" class="absolute bottom-20 right-4 w-12 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-all z-30" title="Tambah Laporan Baru">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+        </button>
+
+        <!-- BOTTOM NAVIGATION BAR -->
+        <nav class="h-16 bg-white border-t border-slate-200 flex justify-around items-center px-1 shadow-lg">
+          <button onclick="switchPage('dashboard', this)" class="nav-btn active flex-1 flex flex-col items-center justify-center py-1 text-emerald-600">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span class="text-[10px] font-medium">Beranda</span>
+          </button>
+          <button onclick="switchPage('misi', this)" class="nav-btn flex-1 flex flex-col items-center justify-center py-1 text-slate-400">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="text-[10px] font-medium">Misi (40)</span>
+          </button>
+          <button onclick="switchPage('tahfizh', this)" class="nav-btn flex-1 flex flex-col items-center justify-center py-1 text-slate-400">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            <span class="text-[10px] font-medium">Tahfizh</span>
+          </button>
+          <button onclick="switchPage('tahsin', this)" class="nav-btn flex-1 flex flex-col items-center justify-center py-1 text-slate-400">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            <span class="text-[10px] font-medium">Tahsin</span>
+          </button>
+          <button onclick="switchPage('toko', this)" class="nav-btn flex-1 flex flex-col items-center justify-center py-1 text-slate-400">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+            <span class="text-[10px] font-medium">Toko</span>
+          </button>
+        </nav>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL PILIHAN (TAHFIZH / TAHSIN) -->
+  <div id="modalPilihan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-end sm:items-center justify-center p-4 z-50" onclick="handleBackdropClick(event, 'modalPilihan')">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3 modal-enter" onclick="event.stopPropagation()">
+      <h3 class="font-bold text-slate-800 text-sm text-center border-b pb-2">Pilih Jenis Laporan Setoran</h3>
+      
+      <button onclick="bukaForm('tahfizh')" class="w-full py-3 px-4 bg-emerald-50 hover:bg-emerald-100 active:scale-98 text-emerald-700 font-bold text-xs rounded-xl flex items-center justify-between border border-emerald-200 transition-all">
+        <span class="flex items-center space-x-2">
+          <span class="text-base">📜</span>
+          <span>Laporan Tahfizh (Hafalan Al-Qur'an)</span>
+        </span>
+        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+
+      <button onclick="bukaForm('tahsin')" class="w-full py-3 px-4 bg-blue-50 hover:bg-blue-100 active:scale-98 text-blue-700 font-bold text-xs rounded-xl flex items-center justify-between border border-blue-200 transition-all">
+        <span class="flex items-center space-x-2">
+          <span class="text-base">📖</span>
+          <span>Laporan Tahsin (Bacaan / Jilid)</span>
+        </span>
+        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>
+
+      <button onclick="tutupSemuaModal()" class="w-full py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-200 bg-slate-100 rounded-xl mt-2">Batal</button>
+    </div>
+  </div>
+
+  <!-- MODAL FORM TAHFIZH -->
+  <div id="modalTahfizh" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="handleBackdropClick(event, 'modalTahfizh')">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto modal-enter" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-emerald-600 text-sm flex items-center space-x-1.5">
+          <span>📜</span>
+          <span>Laporan Tahfizh Baru</span>
+        </h3>
+        <span class="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded">Hafalan</span>
+      </div>
+      
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Jenis Setoran</label>
+        <select id="tfz-kategori" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 font-medium text-emerald-800">
+          <option value="Ziyadah">Ziyadah (Hafalan Baru)</option>
+          <option value="Muraja'ah">Muraja'ah (Mengulang Hafalan)</option>
+          <option value="Ujian / Validasi">Ujian / Validasi (Ustadz)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Tanggal Setor</label>
+        <input type="date" id="tfz-tanggal" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500">
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Nama Siswa</label>
+        <select id="tfz-user" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 select-siswa"></select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-500 block mb-1">Surat <span class="text-rose-500">*</span></label>
+          <input type="text" id="tfz-surah" placeholder="Misal: Al-Mulk" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="text-[11px] font-semibold text-slate-500 block mb-1">Ayat <span class="text-rose-500">*</span></label>
+          <input type="text" id="tfz-ayat" placeholder="Misal: 1 - 15" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500">
+        </div>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Hasil Evaluasi</label>
+        <select id="tfz-hasil" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 font-semibold text-slate-700">
+          <option value="Mutqin">Mutqin (Lancar / Lulus)</option>
+          <option value="Jayyid">Jayyid (Cukup Lancar)</option>
+          <option value="Mardud">Mardud (Mengulang)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Catatan Tajwid / Makhraj</label>
+        <textarea id="tfz-catatan" rows="2" placeholder="Catatan perbaikan bacaan..." class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500"></textarea>
+      </div>
+
+      <div class="flex space-x-2 pt-2">
+        <button onclick="openModalPilihan()" class="flex-1 py-2.5 text-xs font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg">Kembali</button>
+        <button id="btn-submit-tfz" onclick="submitFormTahfizh()" class="flex-1 py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-lg shadow-sm flex items-center justify-center">
+          <span>Simpan Laporan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FORM TAHSIN -->
+  <div id="modalTahsin" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="handleBackdropClick(event, 'modalTahsin')">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto modal-enter" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-blue-600 text-sm flex items-center space-x-1.5">
+          <span>📖</span>
+          <span>Laporan Tahsin Baru</span>
+        </h3>
+        <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded">Bacaan</span>
+      </div>
+      
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Jenis Laporan</label>
+        <select id="ths-kategori" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 font-medium text-blue-800">
+          <option value="Setoran">Setoran (Kelulusan Halaman/Jilid)</option>
+          <option value="Muraja'ah">Muraja'ah (Mengulang Bacaan)</option>
+          <option value="Latihan Mandiri">Latihan Mandiri</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Tanggal Setor</label>
+        <input type="date" id="ths-tanggal" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Nama Siswa</label>
+        <select id="ths-user" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 select-siswa"></select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-500 block mb-1">Jilid / Buku <span class="text-rose-500">*</span></label>
+          <input type="text" id="ths-jilid" placeholder="Misal: Iqro 4 / Al-Qur'an" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="text-[11px] font-semibold text-slate-500 block mb-1">Halaman <span class="text-rose-500">*</span></label>
+          <input type="text" id="ths-halaman" placeholder="Misal: Hal 12" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500">
+        </div>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Hasil Setoran</label>
+        <select id="ths-hasil" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500 font-semibold text-slate-700">
+          <option value="Mutqin">Mutqin (Lancar / Lanjut)</option>
+          <option value="Mengulang">Mengulang (Perlu Penguatan)</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-500 block mb-1">Catatan Tajwid / Mad</label>
+        <textarea id="ths-catatan" rows="2" placeholder="Catatan perbaikan bacaan..." class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500"></textarea>
+      </div>
+
+      <div class="flex space-x-2 pt-2">
+        <button onclick="openModalPilihan()" class="flex-1 py-2.5 text-xs font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg">Kembali</button>
+        <button id="btn-submit-ths" onclick="submitFormTahsin()" class="flex-1 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 rounded-lg shadow-sm flex items-center justify-center">
+          <span>Simpan Laporan</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TUKAR HADIAH (KONFIRMASI) -->
+  <div id="modalTukarHadiah" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="handleBackdropClick(event, 'modalTukarHadiah')">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-4 modal-enter text-center" onclick="event.stopPropagation()">
+      <div id="tukar-icon" class="text-4xl">🎁</div>
+      <div>
+        <h3 id="tukar-title" class="font-bold text-slate-800 text-sm">Konfirmasi Penukaran</h3>
+        <p id="tukar-desc" class="text-xs text-slate-500 mt-1">Apakah kamu yakin ingin menukarkan diamond?</p>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex justify-between items-center text-xs font-bold text-amber-900">
+        <span>Harga Hadiah:</span>
+        <span id="tukar-cost">0 💎</span>
+      </div>
+
+      <div class="flex space-x-2 pt-2">
+        <button onclick="tutupSemuaModal()" class="flex-1 py-2.5 text-xs font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-lg">Batal</button>
+        <button id="btn-confirm-tukar" class="flex-1 py-2.5 text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 active:scale-95 rounded-lg shadow-sm">Tukar Sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL GANTI USER / ROLE -->
+  <div id="modalUserSwitch" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="handleBackdropClick(event, 'modalUserSwitch')">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3 modal-enter" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-slate-800 text-sm">Ganti Pengguna Aktif</h3>
+        <button onclick="tutupSemuaModal()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+      </div>
+      <p class="text-[11px] text-slate-500">Pilih akun untuk menguji fitur sebagai Siswa, Guru, atau Kepala Sekolah:</p>
+      
+      <div id="list-user-switcher" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+        <!-- Render via app.js -->
+      </div>
+
+      <button onclick="tutupSemuaModal()" class="w-full py-2 text-xs font-semibold text-slate-500 bg-slate-100 rounded-lg">Tutup</button>
+    </div>
+  </div>
+
+  <!-- MODAL PENGATURAN KONEKSI SPREADSHEET -->
+  <div id="modalPengaturan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50" onclick="handleBackdropClick(event, 'modalPengaturan')">
+    <div class="bg-white w-full max-w-sm rounded-2xl p-5 shadow-2xl space-y-3 modal-enter" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-1.5">
+          <span>⚙️</span>
+          <span>Pengaturan Spreadsheet</span>
+        </h3>
+        <button onclick="tutupSemuaModal()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+      </div>
+
+      <div>
+        <label class="text-[11px] font-semibold text-slate-600 block mb-1">URL Google Apps Script Web App</label>
+        <input type="text" id="cfg-script-url" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-emerald-500 font-mono text-[11px]">
+        <p class="text-[10px] text-slate-400 mt-1">Kosongkan untuk menggunakan data demo lokal.</p>
+      </div>
+
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-[11px] text-slate-600 space-y-1">
+        <p class="font-bold text-slate-700">Langkah Menghubungkan:</p>
+        <ol class="list-decimal list-inside space-y-0.5 text-[10px] text-slate-500">
+          <li>Buka Google Sheets &rarr; <b>Ekstensi &rarr; Apps Script</b>.</li>
+          <li>Tempel kode dari file <code>Code.gs</code>.</li>
+          <li>Pilih fungsi <code>setupDatabase</code> lalu klik <b>Run</b>.</li>
+          <li>Klik <b>Deploy &rarr; New deployment &rarr; Web app</b>.</li>
+          <li>Akses: <b>Anyone</b> &bull; Eksekusi: <b>Me</b>.</li>
+          <li>Salin Web App URL dan tempelkan di atas.</li>
+        </ol>
+      </div>
+
+      <div class="flex space-x-2 pt-2">
+        <button onclick="resetToDemo()" class="py-2.5 px-3 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg">Reset Demo</button>
+        <button onclick="simpanPengaturanUrl()" class="flex-1 py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-sm">Simpan & Hubungkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Aplikasi Mandiri -->
+  <script src="app.js"></script>
+</body>
+</html>
