@@ -1,0 +1,337 @@
+/* ==========================================================================
+   SEKALI - APLIKASI MONITORING TAHFIZH & TAHSIN (VERSI 2.1)
+   Custom Stylesheet (Mobile-Frame Optimized, Dropdown Groups & Penalty Badges)
+   ========================================================================== */
+
+/* Reset & Basis */
+*, *::before, *::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+  --primary: #059669;
+  --primary-dark: #047857;
+  --primary-light: #ecfdf5;
+  --accent-gold: #f59e0b;
+  --accent-blue: #2563eb;
+  --accent-purple: #7c3aed;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --bg-desktop: #0f172a;
+  --bg-app: #f8fafc;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-desktop);
+  color: var(--text-main);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glassmorphism Header */
+.glass-header {
+  background: rgba(5, 150, 105, 0.97);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.badge-counter {
+  background: rgba(4, 120, 87, 0.7);
+  border: 1px solid rgba(167, 243, 208, 0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Animasi Fade & Slide */
+.fade-in {
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-enter {
+  animation: modalEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 90%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  animation: toastIn 0.3s ease-out forwards;
+  transition: all 0.3s ease;
+}
+
+.toast-success {
+  background-color: #065f46;
+  color: #ecfdf5;
+  border-left: 4px solid #10b981;
+}
+
+.toast-error {
+  background-color: #881337;
+  color: #ffe4e6;
+  border-left: 4px solid #f43f5e;
+}
+
+.toast-info {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-left: 4px solid #38bdf8;
+}
+
+.toast.hide {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Loading Spinner */
+.btn-spinner {
+  display: inline-block;
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.6s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Card Touch States */
+.touch-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.touch-card:active {
+  transform: scale(0.99);
+}
+
+/* Nav Button Active Pill */
+.nav-btn {
+  transition: color 0.2s ease;
+}
+
+.nav-btn.active {
+  color: var(--primary);
+}
+
+.nav-btn.active svg {
+  transform: scale(1.12);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Headline Misi Accordion */
+.headline-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+}
+
+.headline-card.open .headline-content {
+  max-height: 1500px;
+  transition: max-height 0.4s ease-in-out;
+}
+
+.headline-card.open .chevron-icon {
+  transform: rotate(180deg);
+}
+
+.chevron-icon {
+  transition: transform 0.25s ease;
+}
+
+/* Tailwind Icon Badges */
+.hl-icon-badge {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+/* Custom Checkbox Submisi */
+.submisi-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 0.375rem;
+  outline: none;
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  background-color: #fff;
+}
+
+.submisi-checkbox:checked {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+.submisi-checkbox:checked::before {
+  content: "";
+  width: 0.65rem;
+  height: 0.35rem;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+.submisi-item.checked {
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.submisi-item.checked .submisi-title {
+  color: #166534;
+  text-decoration: line-through;
+  text-decoration-color: #10b981;
+}
+
+/* Item Penalti / Hukuman (Bintang Negatif) */
+.submisi-item.penalty {
+  background-color: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.submisi-item.penalty .submisi-checkbox:checked {
+  background-color: #e11d48;
+  border-color: #e11d48;
+}
+
+.submisi-item.penalty.checked {
+  background-color: #ffe4e6;
+  border-color: #fda4af;
+}
+
+.submisi-item.penalty.checked .submisi-title {
+  color: #9f1239;
+  text-decoration: line-through;
+  text-decoration-color: #f43f5e;
+}
+
+/* Dropdown Group Container */
+.dropdown-group-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.875rem;
+  padding: 0.625rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.dropdown-group-box.filled {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.dropdown-group-select {
+  width: 100%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #334155;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dropdown-group-select:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15);
+}
+
+/* Banner Mode Demo */
+.demo-banner {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  text-align: center;
+}
